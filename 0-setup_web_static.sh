@@ -1,48 +1,56 @@
-#!/usr/bin/env bash
-# sets up my web servers for the deployment of web_static
+#!/usr/bin/python3
+"""Compress web static package
+"""
+from fabric.api import *
+from datetime import datetime
+from os import path
 
-echo -e "\e[1;32m START\e[0m"
 
-#--Updating the packages
-sudo apt-get -y update
-sudo apt-get -y install nginx
-echo -e "\e[1;32m Packages updated\e[0m"
-echo
+env.hosts = ['54.86.220.207', '54.175.137.217']
+env.user = 'ubuntu'
+env.key_filename = '~/.ssh/id_rsa
 
-#--configure firewall
-sudo ufw allow 'Nginx HTTP'
-echo -e "\e[1;32m Allow incomming NGINX HTTP connections\e[0m"
-echo
 
-#--created the dir
-sudo mkdir -p /data/web_static/releases/test /data/web_static/shared
-echo -e "\e[1;32m directories created"
-echo
+def do_deploy(archive_path):
+        """Deploy web files to server
+        """
+        try:
+                if not (path.exists(archive_path)):
+                        return False
 
-#--adds test string
-echo "<h1>Welcome to www.uniqueel.tech</h1>" > /data/web_static/releases/test/index.html
-echo -e "\e[1;32m Test string added\e[0m"
-echo
+                # upload archive
+                put(archive_path, '/tmp/')
 
-#--prevent overwrite
-if [ -d "/data/web_static/current" ];
-then
-    echo "path /data/web_static/current exists"
-    sudo rm -rf /data/web_static/current;
-fi;
-echo -e "\e[1;32m prevent overwrite\e[0m"
-echo
+                # create target dir
+                timestamp = archive_path[-18:-4]
+                run('sudo mkdir -p /data/web_static/\
+releases/web_static_{}/'.format(timestamp))
 
-#--create symbolic link
-sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
-sudo chown -hR ubuntu:ubuntu /data
+                # uncompress archive and delete .tgz
+                run('sudo tar -xzf /tmp/web_static_{}.tgz -C \
+/data/web_static/releases/web_static_{}/'
+                    .format(timestamp, timestamp))
 
-sudo sed -i '38i\\tlocation /hbnb_static/ {\n\t\talias /data/web_static/current/;\n\t}\n' /etc/nginx/sites-available/default
+                # remove archive
+                run('sudo rm /tmp/web_static_{}.tgz'.format(timestamp))
 
-sudo ln -sf '/etc/nginx/sites-available/default' '/etc/nginx/sites-enabled/default'
-echo -e "\e[1;32m Symbolic link created\e[0m"
-echo
+                # move contents into host web_static
+                run('sudo mv /data/web_static/releases/web_static_{}/web_static/* \
+/data/web_static/releases/web_static_{}/'.format(timestamp, timestamp))
 
-#--restart NGINX
-sudo service nginx restart
-echo -e "\e[1;32m restart NGINX\e[0m"
+                # remove extraneous web_static dir
+                run('sudo rm -rf /data/web_static/releases/\
+web_static_{}/web_static'
+                    .format(timestamp))
+
+                # delete pre-existing sym link
+                run('sudo rm -rf /data/web_static/current')
+
+                # re-establish symbolic link
+                run('sudo ln -s /data/web_static/releases/\
+web_static_{}/ /data/web_static/current'.format(timestamp))
+        except:
+                return False
+
+        # return True on success
+        return True
