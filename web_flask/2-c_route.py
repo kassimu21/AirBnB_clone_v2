@@ -1,30 +1,35 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
+"""Starts a Flask web apllication.
 """
-Created on Tue Sep  1 14:42:23 2020
-@author: Robinson Montes
-"""
+
 from flask import Flask
+
 app = Flask(__name__)
 
-
+# Define the route for the root URL
 @app.route('/', strict_slashes=False)
-def hello():
-    """Start a basic Flask web application"""
-    return 'Hello HBNB!'
+def hello_HBNB():
+    """Displays 'Hello HBNB!'."""
+    return "Hello HBNB!"
 
 
+# Define the route for '/hbnb'
 @app.route('/hbnb', strict_slashes=False)
 def hbnb():
-    """Adding a specific route /hbnb"""
-    return 'HBNB'
+    """Displays 'HBNB'."""
+    return "HBNB"
 
 
-@app.route('/c/<string:text>', strict_slashes=False)
-def text(text=None):
-    """Dynamic inputed text: replace _ for space and show text"""
-    return "C {}".format(text.replace('_', ' '))
+# Define the route for '/c/<text>'
+@app.route('/c/<text>', strict_slashes=False)
+def c_with_text (text):
+    """Displays 'C' followed by the value of <text>."""
+    # Replace underscores with spaces in thetext variable
+    formatted_text = text.replace('_', ' ')
+    return "C {}".format(formatted_text)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
+    # Start the Flask development server
+    # Listen on all available network interfaces (0.0.0.0) and port 5000
     app.run(host='0.0.0.0', port=5000)
