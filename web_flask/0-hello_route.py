@@ -1,17 +1,18 @@
 #!/usr/bin/python3
-start Flask application
+"""starts a Flask web application."""
+
 from flask import Flask
-app = Flask('app')
+
 app = Flask(__name__)
 
-
-
-@app.route('/airbnb-onepage/')
-def hello_world():
-    #prints hello
+# Define the route for the root URL '/'
+@app.route('/', strict_slashes=False)
+def hello_hbnb():
+    """ Displays 'Hello HBNH! """
     return "Hello HBNB!"
 
 
-if __name__ ==
-"__main__":
+if __name__ == "__main__":
+    # Start the Flask development server
+    # Listen on all available network interfaces (0.0.0.0) and port 5000
     app.run(host="0.0.0.0", port=5000)
