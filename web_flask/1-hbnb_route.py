@@ -1,22 +1,20 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
-"""
-Created on Tue Sep  1 11:15:54 2020
-@author: Robinson Montes
-"""
+"""Starts a flask web application."""
+
 from flask import Flask
+
 app = Flask(__name__)
 
 
 @app.route('/', strict_slashes=False)
-def hello():
-    """Start a basic Flask web application"""
-    return 'Hello HBNB!'
+def hello_hbnb():
+     """Displays 'Hello HBNB!'."""
+    return 'HBNB!'
 
 
 @app.route('/hbnb', strict_slashes=False)
 def hbnb():
-    """Adding a specific route /hbnb"""
+    """Displays 'HBNB!'."""
     return 'HBNB'
 
 
