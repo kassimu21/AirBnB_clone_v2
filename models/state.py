@@ -1,32 +1,39 @@
 #!/usr/bin/python3
-""" State Module for HBNB project """
+"""This is the state class"""
 from models.base_model import BaseModel, Base
-from models import storage_type
-from models.city import City
+from sqlalchemy.orm import relationship, backref
 from sqlalchemy import Column, String
-from sqlalchemy.orm import relationship
+from os import getenv
+from models.city import City
 
 
 class State(BaseModel, Base):
-    """ State class / table model"""
-    __tablename__ = 'states'
-    if storage_type == 'db':
-        name = Column(String(128), nullable=False)
-        cities = relationship('City', backref='state',
-                              cascade='all, delete, delete-orphan')
-    else:
-        name = ''
+    """This is the class for State
+    Attributes:
+        name: input name
+    """
+    __tablename__ = "states"
+    name = Column(String(128), nullable=False)
 
+    if getenv("HBNB_TYPE_STORAGE") == "db":
+        cities = relationship(
+            "City",
+            cascade="all,delete-orphan",
+            backref=backref("state", cascade="all"),
+            passive_deletes=True,
+            single_parent=True)
+
+    if getenv("HBNB_TYPE_STORAGE") == "fs":
         @property
         def cities(self):
-            '''returns the list of City instances with state_id
-                equals the current State.id
-                FileStorage relationship between State and City
-            '''
+            """returns list of City instances with state_id"""
             from models import storage
-            related_cities = []
-            cities = storage.all(City)
-            for city in cities.values():
+            city_list = []
+            for city in storage.all(City).values():
                 if city.state_id == self.id:
-                    related_cities.append(city)
-            return related_cities
+                    city_list.append(city)
+            return city_list
+            """
+            return {k: v for k, v in storage.all().items()
+                    if v.state_id == self.id}
+            """
